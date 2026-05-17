@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { LogIn, User, Lock, Loader2 } from "lucide-react";
+import { User, Lock, Loader2, Eye, EyeOff } from "lucide-react";
+import Image from "next/image";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -22,8 +23,8 @@ export default function LoginPage() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
-  // ⚠️ Tous les hooks doivent être appelés AVANT tout return conditionnel
   const {
     register,
     handleSubmit,
@@ -32,14 +33,12 @@ export default function LoginPage() {
     resolver: zodResolver(loginSchema),
   });
 
-  // Redirection après montage (pas pendant le rendu)
   useEffect(() => {
     if (!loading && user) {
       router.replace("/dashboard");
     }
   }, [loading, user, router]);
 
-  // Rendu conditionnel APRÈS tous les hooks
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -49,7 +48,7 @@ export default function LoginPage() {
   }
 
   if (user) {
-    return null; // La redirection est gérée par le useEffect
+    return null;
   }
 
   const onSubmit = async (data: LoginFormData) => {
@@ -71,10 +70,15 @@ export default function LoginPage() {
     <div className="flex items-center justify-center min-h-screen bg-background p-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary mb-4">
-            <LogIn className="text-white" size={32} />
-          </div>
-          <h1 className="text-2xl font-bold text-text-primary">CMCI</h1>
+          <Image
+            src="/logo.jpg"
+            alt="CMCI"
+            width={80}
+            height={80}
+            className="mx-auto rounded-2xl object-contain"
+            priority
+          />
+          <h1 className="text-2xl font-bold text-text-primary mt-4">CMCI</h1>
           <p className="text-text-secondary mt-1">Rapports & Comptes Rendus</p>
         </div>
 
@@ -92,14 +96,38 @@ export default function LoginPage() {
               {...register("username")}
             />
 
-            <Input
-              label="Mot de passe"
-              type="password"
-              placeholder="••••••••"
-              icon={<Lock size={18} />}
-              error={errors.password?.message}
-              {...register("password")}
-            />
+            {/* Champ mot de passe avec œil */}
+            <div>
+              <label className="block text-sm font-medium text-text-primary mb-1">
+                Mot de passe
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-text-secondary">
+                  <Lock size={18} />
+                </div>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="••••••••"
+                  className={`w-full rounded-lg border bg-surface pl-10 pr-12 py-2 text-sm md:text-base text-text-primary placeholder:text-text-secondary/60 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed ${
+                    errors.password ? "border-danger" : "border-border"
+                  }`}
+                  {...register("password")}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-text-secondary hover:text-text-primary transition-colors"
+                  tabIndex={-1}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+              {errors.password && (
+                <p className="mt-1 text-sm text-danger">
+                  {errors.password.message}
+                </p>
+              )}
+            </div>
 
             {error && (
               <div className="p-3 rounded-lg bg-danger/10 text-danger text-sm">
