@@ -4,8 +4,8 @@ import axios from "axios";
 // 1. Création de l'instance Axios
 // ----------------------------------------------------------------------
 const api = axios.create({
-  // URL de base de l'API NestJS, modifiable via variable d'environnement
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api",
+  baseURL:
+    process.env.NEXT_PUBLIC_API_URL || "https://cmci-backend.onrender.com/api",
   headers: {
     "Content-Type": "application/json",
   },
