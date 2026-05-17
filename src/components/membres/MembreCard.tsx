@@ -5,31 +5,17 @@ import { Avatar } from "@/components/ui/Avatar";
 import { Badge } from "@/components/ui/Badge";
 import type { Membre } from "@/hooks/useMembres";
 
-// Mapping des statuts vers les variants de couleur du Badge
 const statutVariant: Record<
   string,
   "success" | "warning" | "info" | "danger" | "default"
 > = {
   ACTIF: "success",
-  BAPTISE: "info",
-  NOUVEAU: "info",
-  REPENTANT: "warning",
-  BRISER: "warning",
-  INACTIF: "default",
-  DECEDE: "danger",
-  DEMISSIONNE: "danger",
+  RETROGRADE: "danger",
 };
 
-// Mapping des statuts vers un libellé lisible
 const statutLabel: Record<string, string> = {
   ACTIF: "Actif",
-  BAPTISE: "Baptisé",
-  NOUVEAU: "Nouveau",
-  REPENTANT: "Repentant",
-  BRISER: "Brisé",
-  INACTIF: "Inactif",
-  DECEDE: "Décédé",
-  DEMISSIONNE: "Démissionné",
+  RETROGRADE: "Rétrogradé",
 };
 
 interface MembreCardProps {
@@ -43,6 +29,10 @@ export function MembreCard({ membre }: MembreCardProps) {
   const badgeText = statutLabel[membre.statut] || membre.statut;
   const initiales = `${membre.prenom?.[0] || ""}${membre.nom?.[0] || ""}`;
 
+  // Récupérer les noms des fonctions (si disponibles)
+  const fonctionNoms =
+    membre.fonctions?.map((f) => f.fonction?.nom).filter(Boolean) || [];
+
   return (
     <Link href={`/membres/${membre.id}`}>
       <Card className="hover:shadow-md transition-shadow cursor-pointer h-full">
@@ -52,12 +42,16 @@ export function MembreCard({ membre }: MembreCardProps) {
             <p className="font-semibold text-text-primary truncate">
               {membre.prenom} {membre.nom}
             </p>
-            <div className="flex items-center gap-2 mt-1">
+            <div className="flex items-center gap-2 mt-1 flex-wrap">
               <Badge variant={badgeVariant}>{badgeText}</Badge>
-              {membre.fonction && membre.fonction !== "MEMBRE_SIMPLE" && (
-                <span className="text-xs text-text-secondary truncate">
-                  {membre.fonction}
-                </span>
+              {fonctionNoms.length > 0 && (
+                <>
+                  {fonctionNoms.map((nom, idx) => (
+                    <Badge key={idx} variant="default">
+                      {nom}
+                    </Badge>
+                  ))}
+                </>
               )}
             </div>
           </div>

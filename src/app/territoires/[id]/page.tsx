@@ -1,15 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useRouter, useParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, Save } from "lucide-react";
 import Link from "next/link";
+import api from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
 import {
-  useTerritoire,
   useUpdateTerritoire,
   useTerritoires,
   type Territoire,

@@ -3,8 +3,6 @@
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, Save } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
@@ -22,23 +20,21 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 
-// Schéma de validation (identique à la création)
-const rapportSchema = z.object({
-  assembleeId: z.string().min(1, "L'assemblée est requise"),
-  territoireId: z.string().min(1, "Le territoire est requis"),
-  periode: z.string().min(1, "La période est requise"),
-  dateDebut: z.string().min(1, "La date de début est requise"),
-  dateFin: z.string().min(1, "La date de fin est requise"),
-  activites: z.string().min(1, "Les activités sont requises"),
-  effectifs: z.coerce.number().int().min(0, "Doit être ≥ 0"),
-  temoignages: z.string().optional(),
-  problemes: z.string().optional(),
-  besoins: z.string().optional(),
-  recommandations: z.string().optional(),
-  fichierJoint: z.string().optional(),
-});
-
-type RapportFormData = z.infer<typeof rapportSchema>;
+// Type simple pour le formulaire (sans Zod)
+interface RapportFormData {
+  assembleeId: string;
+  territoireId: string;
+  periode: string;
+  dateDebut: string;
+  dateFin: string;
+  activites: string;
+  effectifs: number;
+  temoignages?: string;
+  problemes?: string;
+  besoins?: string;
+  recommandations?: string;
+  fichierJoint?: string;
+}
 
 export default function ModifierRapportPage() {
   const { user } = useAuth();
@@ -57,7 +53,7 @@ export default function ModifierRapportPage() {
   const isDirigeant = user?.role === "DIRIGEANT_ASSEMBLEE";
   const isAuteur = rapport?.soumisParId === user?.id;
 
-  // Vérification des droits : l'utilisateur doit être l'auteur ou admin
+  // Vérification des droits
   const peutModifier = rapport?.statut === "BROUILLON" && (isAuteur || isAdmin);
 
   const {
@@ -67,12 +63,9 @@ export default function ModifierRapportPage() {
     watch,
     reset,
     formState: { errors },
-  } = useForm<RapportFormData>({
-    resolver: zodResolver(rapportSchema),
-  });
+  } = useForm<RapportFormData>();
 
   const selectedAssembleeId = watch("assembleeId");
-  const selectedTerritoireId = watch("territoireId");
 
   // Pré-remplissage du formulaire
   useEffect(() => {
@@ -107,7 +100,11 @@ export default function ModifierRapportPage() {
   const onSubmit = async (data: RapportFormData) => {
     setIsSubmitting(true);
     try {
-      await updateRapport.mutateAsync({ id, ...data });
+      await updateRapport.mutateAsync({
+        id,
+        ...data,
+        effectifs: Number(data.effectifs), // s'assurer que c'est bien un nombre
+      });
       toast.success("Rapport modifié avec succès.");
       router.push(`/rapports/${id}`);
     } catch (error: any) {
@@ -165,7 +162,6 @@ export default function ModifierRapportPage() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-8">
-      {/* En-tête */}
       <div className="flex items-center gap-4">
         <Link
           href={`/rapports/${id}`}
@@ -207,27 +203,33 @@ export default function ModifierRapportPage() {
             <Input
               label="Période"
               placeholder="Ex: Mai 2026"
-              {...register("periode")}
+              {...register("periode", { required: "La période est requise" })}
               error={errors.periode?.message}
             />
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Input
                 label="Date début"
                 type="date"
-                {...register("dateDebut")}
+                {...register("dateDebut", {
+                  required: "La date de début est requise",
+                })}
                 error={errors.dateDebut?.message}
               />
               <Input
                 label="Date fin"
                 type="date"
-                {...register("dateFin")}
+                {...register("dateFin", {
+                  required: "La date de fin est requise",
+                })}
                 error={errors.dateFin?.message}
               />
             </div>
             <Input
               label="Effectifs"
               type="number"
-              {...register("effectifs")}
+              {...register("effectifs", {
+                required: "Les effectifs sont requis",
+              })}
               error={errors.effectifs?.message}
             />
           </CardContent>
@@ -244,7 +246,9 @@ export default function ModifierRapportPage() {
               <textarea
                 className="w-full rounded-lg border border-border bg-surface px-4 py-2 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-primary/50"
                 rows={4}
-                {...register("activites")}
+                {...register("activites", {
+                  required: "Les activités sont requises",
+                })}
               />
               {errors.activites && (
                 <p className="text-sm text-danger">
@@ -280,7 +284,6 @@ export default function ModifierRapportPage() {
           </CardContent>
         </Card>
 
-        {/* Actions */}
         <div className="flex gap-4 justify-end">
           <Button
             variant="ghost"

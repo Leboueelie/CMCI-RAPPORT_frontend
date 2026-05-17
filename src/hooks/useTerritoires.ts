@@ -9,6 +9,8 @@ export interface Territoire {
   nom: string;
   niveau: "PAYS" | "REGION" | "VILLE" | "QUARTIER" | "SECTEUR";
   parentId?: string | null;
+  contact?: string;
+  adresse?: string;
   enfants?: Territoire[];
   _count?: {
     users: number;

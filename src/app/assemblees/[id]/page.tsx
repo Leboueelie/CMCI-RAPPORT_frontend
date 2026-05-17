@@ -20,11 +20,9 @@ import { useMembresList } from "@/hooks/useMembres";
 import { MembreCard } from "@/components/membres/MembreCard";
 import { Button } from "@/components/ui/Button";
 import { Card, CardHeader, CardContent } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
 import { Spinner } from "@/components/ui/Spinner";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Modal } from "@/components/ui/Modal";
-import { AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 
 export default function AssembleeDetailPage() {
@@ -45,11 +43,10 @@ export default function AssembleeDetailPage() {
     user?.role === "MISSIONNAIRE";
   const canDelete = user?.role === "ADMIN_SYSTEME";
 
-  // Vérification multi-dirigeants
-  const isDirigeant =
-    user?.role === "ADMIN_SYSTEME" ||
-    (assemblee?.dirigeants?.some((d: any) => d.user?.id === user?.id) ?? false);
-
+  // L'utilisateur peut ajouter un membre s'il est admin ou s'il fait partie des dirigeants de cette assemblée
+  const isDirigeant = assemblee?.dirigeants?.some(
+    (d: any) => d.user?.id === user?.id,
+  );
   const canAddMember =
     user?.role === "ADMIN_SYSTEME" ||
     (user?.role === "DIRIGEANT_ASSEMBLEE" && isDirigeant);
@@ -78,7 +75,6 @@ export default function AssembleeDetailPage() {
   if (isError || !assemblee) {
     return (
       <EmptyState
-        icon={<AlertTriangle className="text-danger" size={48} />}
         title="Assemblée introuvable"
         description="Cette assemblée n'existe pas ou a été supprimée."
         action={
@@ -92,7 +88,6 @@ export default function AssembleeDetailPage() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-8">
-      {/* Navigation retour */}
       <Link
         href="/assemblees"
         className="inline-flex items-center gap-2 text-text-secondary hover:text-text-primary"
@@ -101,7 +96,6 @@ export default function AssembleeDetailPage() {
         Retour à la liste
       </Link>
 
-      {/* En-tête */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-text-primary">
@@ -144,7 +138,6 @@ export default function AssembleeDetailPage() {
         </div>
       </div>
 
-      {/* Informations générales */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-1">
           <Card>
@@ -169,8 +162,8 @@ export default function AssembleeDetailPage() {
                   {new Date(assemblee.dateCreation).toLocaleDateString("fr-FR")}
                 </span>
               </div>
-              {/* Dirigeants multiples */}
-              {assemblee.dirigeants && assemblee.dirigeants.length > 0 && (
+
+              {assemblee.dirigeants && assemblee.dirigeants.length > 0 ? (
                 <div className="text-sm">
                   <p className="text-text-secondary">
                     Dirigeant{assemblee.dirigeants.length > 1 ? "s" : ""}
@@ -183,15 +176,13 @@ export default function AssembleeDetailPage() {
                     ))}
                   </ul>
                 </div>
-              )}
-              {(!assemblee.dirigeants || assemblee.dirigeants.length === 0) && (
+              ) : (
                 <p className="text-sm text-text-secondary">Aucun dirigeant</p>
               )}
             </CardContent>
           </Card>
         </div>
 
-        {/* Membres récents */}
         <div className="lg:col-span-2">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold text-text-primary">
@@ -210,7 +201,7 @@ export default function AssembleeDetailPage() {
                   Ajouter
                 </Button>
               )}
-              <Link href={`/membres?assembleeId=${id}`}>
+              <Link href={`/membres/assemblee/${id}`}>
                 <Button size="sm" variant="ghost">
                   Voir tous
                 </Button>
@@ -245,7 +236,6 @@ export default function AssembleeDetailPage() {
         </div>
       </div>
 
-      {/* Modale de suppression */}
       <Modal
         isOpen={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}

@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useRouter } from "next/navigation";
 import type { Membre } from "@/hooks/useMembres";
 
 interface MembreTableProps {
@@ -8,6 +9,12 @@ interface MembreTableProps {
 }
 
 export function MembreTable({ membres }: MembreTableProps) {
+  const router = useRouter();
+
+  const handleRowClick = (id: string) => {
+    router.push(`/membres/${id}`);
+  };
+
   return (
     <div className="overflow-x-auto -mx-4 sm:mx-0">
       <table className="min-w-full text-xs sm:text-sm">
@@ -50,7 +57,7 @@ export function MembreTable({ membres }: MembreTableProps) {
             <tr
               key={m.id}
               className="border-b hover:bg-gray-50 cursor-pointer"
-              onClick={() => (window.location.href = `/membres/${m.id}`)}
+              onClick={() => handleRowClick(m.id)}
             >
               <td className="px-2 py-1.5 text-text-secondary text-center">
                 {index + 1}

@@ -8,12 +8,21 @@ export interface Assemblee {
   id: string;
   nom: string;
   territoireId: string;
-  dirigeantId?: string;
+  dirigeantId?: string; // gardez-le pour la compatibilité
+  dirigeant?: { id: string; username: string; prenom?: string; nom?: string };
+  dirigeants?: {
+    user: {
+      id: string;
+      username: string;
+      prenom?: string;
+      nom?: string;
+      contact?: string;
+    };
+  }[]; // <-- AJOUT
   contact?: string;
   adresse?: string;
   dateCreation: string;
   territoire?: { id: string; nom: string; niveau: string };
-  dirigeant?: { id: string; username: string; prenom?: string; nom?: string };
   _count?: {
     membres: number;
     rapports: number;

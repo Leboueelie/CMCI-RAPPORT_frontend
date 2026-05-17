@@ -16,12 +16,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { useAssembleesList } from "@/hooks/useAssemblees";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { Select } from "@/components/ui/Select";
-import { Card, CardHeader, CardContent } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
+import { Card, CardContent } from "@/components/ui/Card";
 import { Spinner } from "@/components/ui/Spinner";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { AlertTriangle } from "lucide-react";
 
 export default function AssembleesPage() {
   const { user } = useAuth();
@@ -51,7 +48,6 @@ export default function AssembleesPage() {
   if (isError || !data) {
     return (
       <EmptyState
-        icon={<AlertTriangle className="text-danger" size={48} />}
         title="Erreur de chargement"
         description="Impossible de récupérer la liste des assemblées."
         action={
@@ -65,7 +61,6 @@ export default function AssembleesPage() {
 
   return (
     <div className="space-y-6">
-      {/* En-tête */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-text-primary flex items-center gap-2">
@@ -88,7 +83,6 @@ export default function AssembleesPage() {
         )}
       </div>
 
-      {/* Filtres */}
       <div className="max-w-md">
         <Input
           placeholder="Rechercher une assemblée..."
@@ -101,7 +95,6 @@ export default function AssembleesPage() {
         />
       </div>
 
-      {/* Grille des assemblées */}
       {data.data.length === 0 ? (
         <EmptyState
           title="Aucune assemblée trouvée"
@@ -148,10 +141,15 @@ export default function AssembleesPage() {
                       {ass._count?.rapports ?? 0}
                     </span>
                   </div>
-                  {ass.dirigeant && (
+                  {ass.dirigeants && ass.dirigeants.length > 0 ? (
                     <p className="text-xs text-text-secondary">
-                      Dirigeant : {ass.dirigeant.prenom || ""}{" "}
-                      {ass.dirigeant.nom || ass.dirigeant.username}
+                      {ass.dirigeants.length === 1
+                        ? `Dirigeant : ${ass.dirigeants[0].user?.prenom || ""} ${ass.dirigeants[0].user?.nom || ""}`
+                        : `${ass.dirigeants.length} dirigeants`}
+                    </p>
+                  ) : (
+                    <p className="text-xs text-text-secondary">
+                      Aucun dirigeant
                     </p>
                   )}
                 </CardContent>
@@ -161,7 +159,6 @@ export default function AssembleesPage() {
         </div>
       )}
 
-      {/* Pagination */}
       {data.meta.totalPages > 1 && (
         <div className="flex justify-center gap-2">
           <Button

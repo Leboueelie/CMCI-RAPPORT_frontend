@@ -1,7 +1,8 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
-  allowedDevOrigins: ["10.209.36.94"],
+// next.config.ts
+const nextConfig = {
+  turbopack: {
+    root: __dirname,
+  },
 };
 
 export default nextConfig;

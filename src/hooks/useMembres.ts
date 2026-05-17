@@ -10,13 +10,11 @@ export interface Membre {
   assembleeId: string;
   nom: string;
   prenom: string;
-  dateNaissance?: string;
-  lieuNaissance?: string;
+  dateNaissance?: string; // date ISO
+  dateConversion?: string; // date ISO
+  dateAdhesion?: string; // présent dans les réponses de détail
   contact?: string;
-  email?: string;
-  adresse?: string;
   profession?: string;
-  dateConversion?: string;
   baptiseEau?: boolean;
   baptiseSaintEsprit?: boolean;
   liensBrises?: boolean;
@@ -24,16 +22,9 @@ export interface Membre {
   nombreEnfants?: number;
   faiseurDisciple?: string;
   niveauAcademique?: string;
-  statut:
-    | "NOUVEAU"
-    | "REPENTANT"
-    | "BRISER"
-    | "BAPTISE"
-    | "ACTIF"
-    | "INACTIF"
-    | "DECEDE"
-    | "DEMISSIONNE";
-  fonction: string;
+  statut: "ACTIF" | "RETROGRADE";
+  fonctionIds?: string[]; // utilisé dans les formulaires
+  fonctions?: { fonction: { id: string; nom: string } }[]; // présent dans les réponses
   photo?: string | null;
   notes?: string;
   assemblee?: { id: string; nom: string };

@@ -3,8 +3,6 @@
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, Save } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
@@ -21,28 +19,27 @@ import { Card, CardHeader, CardContent } from "@/components/ui/Card";
 import { Spinner } from "@/components/ui/Spinner";
 import { toast } from "sonner";
 
-const membreSchema = z.object({
-  assembleeId: z.string().min(1, "L'assemblée est requise"),
-  nom: z.string().min(1, "Le nom est requis"),
-  prenom: z.string().min(1, "Le prénom est requis"),
-  dateNaissance: z.string().optional(),
-  dateConversion: z.string().optional(),
-  contact: z.string().optional(),
-  profession: z.string().optional(),
-  baptiseEau: z.boolean().optional(),
-  baptiseSaintEsprit: z.boolean().optional(),
-  liensBrises: z.boolean().optional(),
-  situationMatrimoniale: z.string().optional(),
-  nombreEnfants: z.coerce.number().int().min(0).optional(),
-  faiseurDisciple: z.string().optional(),
-  niveauAcademique: z.string().optional(),
-  statut: z.enum(["ACTIF", "RETROGRADE"]).optional(),
-  fonctionIds: z.array(z.string()).optional(),
-  photo: z.string().optional(),
-  notes: z.string().optional(),
-});
-
-type MembreFormData = z.infer<typeof membreSchema>;
+// Type simple pour le formulaire (sans Zod)
+interface MembreFormData {
+  assembleeId: string;
+  nom: string;
+  prenom: string;
+  dateNaissance?: string;
+  dateConversion?: string;
+  contact?: string;
+  profession?: string;
+  baptiseEau?: boolean;
+  baptiseSaintEsprit?: boolean;
+  liensBrises?: boolean;
+  situationMatrimoniale?: string;
+  nombreEnfants?: number;
+  faiseurDisciple?: string;
+  niveauAcademique?: string;
+  statut?: string;
+  fonctionIds?: string[];
+  photo?: string;
+  notes?: string;
+}
 
 export default function ModifierMembrePage() {
   const { user } = useAuth();
@@ -67,7 +64,6 @@ export default function ModifierMembrePage() {
     reset,
     formState: { errors },
   } = useForm<MembreFormData>({
-    resolver: zodResolver(membreSchema),
     defaultValues: {
       statut: "ACTIF",
       baptiseEau: false,
@@ -100,7 +96,7 @@ export default function ModifierMembrePage() {
         nombreEnfants: membre.nombreEnfants ?? 0,
         faiseurDisciple: membre.faiseurDisciple || "",
         niveauAcademique: membre.niveauAcademique || "",
-        statut: membre.statut as "ACTIF" | "RETROGRADE",
+        statut: membre.statut || "ACTIF",
         fonctionIds: existingIds,
         photo: membre.photo || "",
         notes: membre.notes || "",
@@ -128,7 +124,11 @@ export default function ModifierMembrePage() {
 
     setIsSubmitting(true);
     try {
-      await updateMembre.mutateAsync({ id, ...payload });
+      await updateMembre.mutateAsync({
+        id,
+        ...payload,
+        statut: payload.statut as "ACTIF" | "RETROGRADE" | undefined,
+      });
       toast.success("Membre modifié avec succès.");
       router.push(`/membres/${id}`);
     } catch (error: any) {
@@ -205,12 +205,12 @@ export default function ModifierMembrePage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Input
                 label="Nom"
-                {...register("nom")}
+                {...register("nom", { required: "Le nom est requis" })}
                 error={errors.nom?.message}
               />
               <Input
                 label="Prénom"
-                {...register("prenom")}
+                {...register("prenom", { required: "Le prénom est requis" })}
                 error={errors.prenom?.message}
               />
             </div>

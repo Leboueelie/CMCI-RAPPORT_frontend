@@ -3,8 +3,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, FileText } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
@@ -19,23 +17,21 @@ import { Select } from "@/components/ui/Select";
 import { Card, CardHeader, CardContent } from "@/components/ui/Card";
 import { toast } from "sonner";
 
-// Schéma de validation
-const rapportSchema = z.object({
-  assembleeId: z.string().min(1, "L'assemblée est requise"),
-  territoireId: z.string().min(1, "Le territoire est requis"),
-  periode: z.string().min(1, "La période est requise"),
-  dateDebut: z.string().min(1, "La date de début est requise"),
-  dateFin: z.string().min(1, "La date de fin est requise"),
-  activites: z.string().min(1, "Les activités sont requises"),
-  effectifs: z.coerce.number().int().min(0, "Doit être ≥ 0"),
-  temoignages: z.string().optional(),
-  problemes: z.string().optional(),
-  besoins: z.string().optional(),
-  recommandations: z.string().optional(),
-  fichierJoint: z.string().optional(),
-});
-
-type RapportFormData = z.infer<typeof rapportSchema>;
+// Type simple pour le formulaire (sans Zod)
+interface RapportFormData {
+  assembleeId: string;
+  territoireId: string;
+  periode: string;
+  dateDebut: string;
+  dateFin: string;
+  activites: string;
+  effectifs: number;
+  temoignages?: string;
+  problemes?: string;
+  besoins?: string;
+  recommandations?: string;
+  fichierJoint?: string;
+}
 
 export default function NouveauRapportPage() {
   const { user } = useAuth();
@@ -43,8 +39,7 @@ export default function NouveauRapportPage() {
   const createRapport = useCreateRapport();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Récupération des assemblées (tableau)
-  const { data: assemblees } = useAssembleesSelect(); // <- utilise le hook qui renvoie un tableau
+  const { data: assemblees } = useAssembleesSelect();
   const { data: assembleeDirigeant } = useAssembleeDuDirigeant();
 
   const {
@@ -54,7 +49,6 @@ export default function NouveauRapportPage() {
     watch,
     formState: { errors },
   } = useForm<RapportFormData>({
-    resolver: zodResolver(rapportSchema),
     defaultValues: {
       periode: "",
       dateDebut: "",
@@ -82,7 +76,6 @@ export default function NouveauRapportPage() {
   // Mise à jour automatique du territoire lorsque l'assemblée change (pour admin)
   useEffect(() => {
     if (selectedAssembleeId && assemblees) {
-      // assemblees est un tableau, on peut utiliser find
       const ass = assemblees.find((a) => a.id === selectedAssembleeId);
       if (ass) {
         setValue("territoireId", ass.territoireId);
@@ -93,7 +86,11 @@ export default function NouveauRapportPage() {
   const onSubmit = async (data: RapportFormData) => {
     setIsSubmitting(true);
     try {
-      await createRapport.mutateAsync(data);
+      // S'assurer que les effectifs sont bien un nombre
+      await createRapport.mutateAsync({
+        ...data,
+        effectifs: Number(data.effectifs),
+      });
       toast.success("Rapport créé avec succès (brouillon).");
       router.push("/rapports");
     } catch (error: any) {
@@ -142,7 +139,11 @@ export default function NouveauRapportPage() {
                   assemblees?.map((a) => ({ value: a.id, label: a.nom })) || []
                 }
                 error={errors.assembleeId?.message}
-                onChange={(e) => setValue("assembleeId", e.target.value)}
+                onChange={(e) =>
+                  setValue("assembleeId", e.target.value, {
+                    shouldValidate: true,
+                  })
+                }
               />
             )}
             {isDirigeant && (
@@ -157,7 +158,7 @@ export default function NouveauRapportPage() {
             <Input
               label="Période"
               placeholder="Ex: Mai 2026"
-              {...register("periode")}
+              {...register("periode", { required: "La période est requise" })}
               error={errors.periode?.message}
             />
 
@@ -166,13 +167,17 @@ export default function NouveauRapportPage() {
               <Input
                 label="Date début"
                 type="date"
-                {...register("dateDebut")}
+                {...register("dateDebut", {
+                  required: "La date de début est requise",
+                })}
                 error={errors.dateDebut?.message}
               />
               <Input
                 label="Date fin"
                 type="date"
-                {...register("dateFin")}
+                {...register("dateFin", {
+                  required: "La date de fin est requise",
+                })}
                 error={errors.dateFin?.message}
               />
             </div>
@@ -181,7 +186,9 @@ export default function NouveauRapportPage() {
             <Input
               label="Effectifs"
               type="number"
-              {...register("effectifs")}
+              {...register("effectifs", {
+                required: "Les effectifs sont requis",
+              })}
               error={errors.effectifs?.message}
             />
           </CardContent>
@@ -199,7 +206,9 @@ export default function NouveauRapportPage() {
               <textarea
                 className="w-full rounded-lg border border-border bg-surface px-4 py-2 text-sm md:text-base focus:outline-none focus:ring-2 focus:ring-primary/50"
                 rows={4}
-                {...register("activites")}
+                {...register("activites", {
+                  required: "Les activités sont requises",
+                })}
               />
               {errors.activites && (
                 <p className="text-sm text-danger">

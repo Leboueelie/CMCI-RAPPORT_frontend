@@ -329,15 +329,13 @@ function InfoItem({
   label: string;
   value?: string;
 }) {
-  if (!value && value !== 0) return null;
+  if (!value) return null;
   return (
     <div className="flex items-start gap-3">
       <Icon size={18} className="text-text-secondary mt-0.5" />
       <div>
         <p className="text-sm text-text-secondary">{label}</p>
-        <p className="text-text-primary">
-          {label.toLowerCase().includes("date") ? value : value}
-        </p>
+        <p className="text-text-primary">{value}</p>
       </div>
     </div>
   );

@@ -1,11 +1,10 @@
 import React from "react";
-import { ChevronUp, ChevronDown } from "lucide-react";
 
 interface Column<T> {
   key: string;
   header: string;
   sortable?: boolean;
-  render?: (item: T) => React.ReactNode;
+  render?: (item: T, index?: number) => React.ReactNode; // <-- index optionnel
   className?: string;
 }
 
@@ -56,7 +55,6 @@ export function Table<T>({
     <div
       className={`bg-surface rounded-xl border border-border overflow-hidden ${className}`}
     >
-      {/* Conteneur avec scroll horizontal sur mobile */}
       <div className="overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead>
@@ -72,10 +70,15 @@ export function Table<T>({
                 >
                   <div className="flex items-center gap-1">
                     {col.header}
+                    {/* Chevrons pour tri (non fonctionnels, juste visuels) */}
                     {col.sortable && (
                       <span className="text-text-secondary/60">
-                        <ChevronUp size={14} />
-                        <ChevronDown size={14} className="-mt-1" />
+                        <svg width="14" height="14" viewBox="0 0 14 14">
+                          <path d="M7 3L3 7h8L7 3z" />
+                        </svg>
+                        <svg width="14" height="14" viewBox="0 0 14 14">
+                          <path d="M7 11L3 7h8l-4 4z" />
+                        </svg>
                       </span>
                     )}
                   </div>
@@ -88,10 +91,17 @@ export function Table<T>({
               <tr
                 key={keyExtractor(item)}
                 onClick={() => onRowClick?.(item)}
-                className={`...`}
+                className={`border-b border-border last:border-b-0 ${
+                  onRowClick
+                    ? "cursor-pointer hover:bg-gray-50/50 transition-colors"
+                    : ""
+                }`}
               >
                 {columns.map((col) => (
-                  <td key={col.key} className={`...`}>
+                  <td
+                    key={col.key}
+                    className={`px-4 py-3 text-text-primary whitespace-nowrap ${col.className || ""}`}
+                  >
                     {col.render
                       ? col.render(item, rowIndex)
                       : (item as any)[col.key]}

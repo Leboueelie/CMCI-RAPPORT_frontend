@@ -1,17 +1,28 @@
 "use client";
 
 import React from "react";
-import { useRapportsList, type RapportsFilters } from "@/hooks/useRapports";
+import { useRapportsList } from "@/hooks/useRapports";
 import { RapportCard } from "./RapportCard";
-import { Spinner } from "@/components/ui/Spinner";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Button } from "@/components/ui/Button";
 import { AlertTriangle } from "lucide-react";
-import { Skeleton } from "../ui/Skeleton";
+import { Skeleton } from "@/components/ui/Skeleton"; // chemin corrigé
+
+// Définition locale du type de filtres
+interface RapportsFilters {
+  statut?: "BROUILLON" | "SOUMIS" | "VALIDE" | "REJETE";
+  assembleeId?: string;
+  territoireId?: string;
+  periode?: string;
+  dateDebut?: string;
+  dateFin?: string;
+  page?: number;
+  limit?: number;
+}
 
 interface RapportListProps {
   filters?: RapportsFilters;
-  onValiderRapport?: (rapport: any) => void; // callback pour ouvrir la modale de validation
+  onValiderRapport?: (rapport: any) => void;
 }
 
 export function RapportList({
@@ -87,7 +98,6 @@ export function RapportList({
           />
         ))}
       </div>
-
       <p className="text-sm text-text-secondary mt-4 text-center">
         {data.meta.total} rapport{data.meta.total > 1 ? "s" : ""}
       </p>
